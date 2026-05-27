@@ -126,6 +126,8 @@ export default function VocabTracker() {
     <div
       style={{
         minHeight: "100vh",
+        height: "100vh",
+        overflowY: "auto",
         background: "#0D0D0D",
         fontFamily: "'Georgia', serif",
         color: "#E8E0D0",
