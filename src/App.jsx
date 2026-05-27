@@ -451,7 +451,7 @@ export default function VocabTracker() {
       )}
 
       <style>{`
-        html, body, #root {
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -483,6 +483,5 @@ input::placeholder {
 * {
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
-}
 }
 `}</style>
