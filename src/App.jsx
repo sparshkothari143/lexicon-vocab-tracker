@@ -451,10 +451,38 @@ export default function VocabTracker() {
       )}
 
       <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        input::placeholder { color: #333; }
-        * { -webkit-tap-highlight-color: transparent; }
-      `}</style>
-    </div>
-  );
+        html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background: #0D0D0D;
+  overflow-x: hidden;
 }
+
+body {
+  overscroll-behavior: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+input::placeholder {
+  color: #333;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+}
+`}</style>
