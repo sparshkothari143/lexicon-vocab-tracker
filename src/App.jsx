@@ -47,63 +47,70 @@ export default function VocabTracker() {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
-  const [form, setForm] = useState({ word: "", pos: "Adjective", meaning: "", vibe: "", example: "" });
+  const [form, setForm] = useState({
+    word: "",
+    pos: "Adjective",
+    meaning: "",
+    vibe: "",
+    example: "",
+  });
   const [saved, setSaved] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const result = await window.storage.get(STORAGE_KEY);
-        if (result && result.value) {
-          setWords(JSON.parse(result.value));
-        } else {
-          setWords(SAMPLE_WORDS);
-          await window.storage.set(STORAGE_KEY, JSON.stringify(SAMPLE_WORDS));
-        }
-      } catch {
+    try {
+      const savedWords = localStorage.getItem(STORAGE_KEY);
+
+      if (savedWords) {
+        setWords(JSON.parse(savedWords));
+      } else {
         setWords(SAMPLE_WORDS);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE_WORDS));
       }
-    };
-    load();
+    } catch {
+      setWords(SAMPLE_WORDS);
+    }
   }, []);
 
-  const saveWords = async (updated) => {
+  const saveWords = (updated) => {
     try {
-      await window.storage.set(STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     } catch {}
   };
 
   const filtered = words
-    .filter((w) =>
-      w.word.toLowerCase().includes(search.toLowerCase()) ||
-      w.meaning.toLowerCase().includes(search.toLowerCase()) ||
-      w.vibe.toLowerCase().includes(search.toLowerCase())
+    .filter(
+      (w) =>
+        w.word.toLowerCase().includes(search.toLowerCase()) ||
+        w.meaning.toLowerCase().includes(search.toLowerCase()) ||
+        w.vibe.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => a.word.localeCompare(b.word));
 
-  const handleAdd = async () => {
+  const handleAdd = () => {
     if (!form.word.trim() || !form.meaning.trim()) return;
+
     const newWord = {
       id: Date.now(),
       ...form,
       word: form.word.trim(),
       date: new Date().toISOString().split("T")[0],
     };
+
     const updated = [...words, newWord];
     setWords(updated);
-    await saveWords(updated);
+    saveWords(updated);
     setForm({ word: "", pos: "Adjective", meaning: "", vibe: "", example: "" });
     setShowForm(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     const updated = words.filter((w) => w.id !== id);
     setWords(updated);
-    await saveWords(updated);
+    saveWords(updated);
     setDeleteConfirm(null);
     if (expandedId === id) setExpandedId(null);
   };
@@ -116,49 +123,74 @@ export default function VocabTracker() {
   });
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#0D0D0D",
-      fontFamily: "'Georgia', serif",
-      color: "#E8E0D0",
-      paddingBottom: "100px",
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: "32px 20px 20px",
-        borderBottom: "1px solid #1E1E1E",
-        position: "sticky",
-        top: 0,
+    <div
+      style={{
+        minHeight: "100vh",
         background: "#0D0D0D",
-        zIndex: 100,
-      }}>
+        fontFamily: "'Georgia', serif",
+        color: "#E8E0D0",
+        paddingBottom: "100px",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "32px 20px 20px",
+          borderBottom: "1px solid #1E1E1E",
+          position: "sticky",
+          top: 0,
+          background: "#0D0D0D",
+          zIndex: 100,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div>
-            <div style={{ fontSize: "11px", letterSpacing: "4px", color: "#555", textTransform: "uppercase", marginBottom: "4px" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                letterSpacing: "4px",
+                color: "#555",
+                textTransform: "uppercase",
+                marginBottom: "4px",
+              }}
+            >
               Your Personal
             </div>
             <h1 style={{ margin: 0, fontSize: "26px", fontWeight: "normal", color: "#E8E0D0", letterSpacing: "1px" }}>
               Lexicon
             </h1>
           </div>
-          <div style={{
-            background: "#1A1A1A",
-            border: "1px solid #2A2A2A",
-            borderRadius: "50%",
-            width: "44px",
-            height: "44px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "18px",
-          }}>
+          <div
+            style={{
+              background: "#1A1A1A",
+              border: "1px solid #2A2A2A",
+              borderRadius: "50%",
+              width: "44px",
+              height: "44px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "18px",
+            }}
+          >
             📖
           </div>
         </div>
 
         {/* Search */}
         <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#444", fontSize: "14px" }}>🔍</span>
+          <span
+            style={{
+              position: "absolute",
+              left: "14px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "#444",
+              fontSize: "14px",
+            }}
+          >
+            🔍
+          </span>
           <input
             ref={inputRef}
             value={search}
@@ -178,10 +210,22 @@ export default function VocabTracker() {
             }}
           />
           {search && (
-            <button onClick={() => setSearch("")} style={{
-              position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)",
-              background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px",
-            }}>×</button>
+            <button
+              onClick={() => setSearch("")}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                color: "#555",
+                cursor: "pointer",
+                fontSize: "16px",
+              }}
+            >
+              ×
+            </button>
           )}
         </div>
 
@@ -200,107 +244,209 @@ export default function VocabTracker() {
 
       {/* Word List */}
       <div style={{ padding: "0 20px" }}>
-        {Object.keys(grouped).sort().map((letter) => (
-          <div key={letter}>
-            <div style={{
-              fontSize: "11px",
-              letterSpacing: "3px",
-              color: "#C9A96E",
-              textTransform: "uppercase",
-              padding: "20px 0 8px",
-              borderBottom: "1px solid #1A1A1A",
-            }}>
-              {letter}
-            </div>
-            {grouped[letter].map((w) => (
-              <div key={w.id}>
-                <div
-                  onClick={() => setExpandedId(expandedId === w.id ? null : w.id)}
-                  style={{
-                    padding: "16px 0",
-                    borderBottom: "1px solid #141414",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "18px", color: "#E8E0D0", fontStyle: "italic" }}>{w.word}</span>
-                      <span style={{
-                        fontSize: "10px",
-                        padding: "2px 8px",
-                        borderRadius: "20px",
-                        background: (POS_COLORS[w.pos] || "#888") + "22",
-                        color: POS_COLORS[w.pos] || "#888",
-                        border: `1px solid ${(POS_COLORS[w.pos] || "#888")}44`,
-                        letterSpacing: "0.5px",
-                      }}>
-                        {w.pos}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: "13px", color: "#777", lineHeight: "1.4" }}>
-                      {w.meaning.length > 60 ? w.meaning.slice(0, 60) + "…" : w.meaning}
-                    </div>
-                  </div>
-                  <span style={{ color: "#333", fontSize: "12px", marginLeft: "12px", transition: "transform 0.2s", transform: expandedId === w.id ? "rotate(180deg)" : "none" }}>▼</span>
-                </div>
-
-                {expandedId === w.id && (
-                  <div style={{
-                    background: "#111",
-                    border: "1px solid #1E1E1E",
-                    borderRadius: "12px",
-                    padding: "16px",
-                    marginBottom: "8px",
-                    animation: "fadeIn 0.2s ease",
-                  }}>
-                    <div style={{ marginBottom: "12px" }}>
-                      <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#555", textTransform: "uppercase", marginBottom: "4px" }}>Meaning</div>
-                      <div style={{ fontSize: "14px", color: "#C8C0B0", lineHeight: "1.6" }}>{w.meaning}</div>
-                    </div>
-                    {w.vibe && (
-                      <div style={{ marginBottom: "12px" }}>
-                        <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#555", textTransform: "uppercase", marginBottom: "4px" }}>Vibe / Context</div>
-                        <div style={{ fontSize: "13px", color: "#C9A96E", lineHeight: "1.5", fontStyle: "italic" }}>✦ {w.vibe}</div>
-                      </div>
-                    )}
-                    {w.example && (
-                      <div style={{ marginBottom: "12px" }}>
-                        <div style={{ fontSize: "10px", letterSpacing: "2px", color: "#555", textTransform: "uppercase", marginBottom: "4px" }}>Example</div>
-                        <div style={{
-                          fontSize: "13px",
-                          color: "#888",
-                          lineHeight: "1.6",
-                          borderLeft: "2px solid #C9A96E33",
-                          paddingLeft: "12px",
-                          fontStyle: "italic",
-                        }}>"{w.example}"</div>
-                      </div>
-                    )}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px" }}>
-                      <span style={{ fontSize: "11px", color: "#333" }}>Added {w.date}</span>
-                      {deleteConfirm === w.id ? (
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <button onClick={() => setDeleteConfirm(null)} style={{ fontSize: "12px", background: "#1A1A1A", border: "1px solid #333", color: "#888", padding: "4px 12px", borderRadius: "6px", cursor: "pointer" }}>Cancel</button>
-                          <button onClick={() => handleDelete(w.id)} style={{ fontSize: "12px", background: "#FF4444", border: "none", color: "#fff", padding: "4px 12px", borderRadius: "6px", cursor: "pointer" }}>Delete</button>
-                        </div>
-                      ) : (
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(w.id); }} style={{ fontSize: "12px", background: "none", border: "1px solid #2A2A2A", color: "#444", padding: "4px 12px", borderRadius: "6px", cursor: "pointer" }}>Remove</button>
-                      )}
-                    </div>
-                  </div>
-                )}
+        {Object.keys(grouped)
+          .sort()
+          .map((letter) => (
+            <div key={letter}>
+              <div
+                style={{
+                  fontSize: "11px",
+                  letterSpacing: "3px",
+                  color: "#C9A96E",
+                  textTransform: "uppercase",
+                  padding: "20px 0 8px",
+                  borderBottom: "1px solid #1A1A1A",
+                }}
+              >
+                {letter}
               </div>
-            ))}
-          </div>
-        ))}
+
+              {grouped[letter].map((w) => (
+                <div key={w.id}>
+                  <div
+                    onClick={() => setExpandedId(expandedId === w.id ? null : w.id)}
+                    style={{
+                      padding: "16px 0",
+                      borderBottom: "1px solid #141414",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <span style={{ fontSize: "18px", color: "#E8E0D0", fontStyle: "italic" }}>{w.word}</span>
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            padding: "2px 8px",
+                            borderRadius: "20px",
+                            background: (POS_COLORS[w.pos] || "#888") + "22",
+                            color: POS_COLORS[w.pos] || "#888",
+                            border: `1px solid ${(POS_COLORS[w.pos] || "#888")}44`,
+                            letterSpacing: "0.5px",
+                          }}
+                        >
+                          {w.pos}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: "13px", color: "#777", lineHeight: "1.4" }}>
+                        {w.meaning.length > 60 ? w.meaning.slice(0, 60) + "…" : w.meaning}
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        color: "#333",
+                        fontSize: "12px",
+                        marginLeft: "12px",
+                        transition: "transform 0.2s",
+                        transform: expandedId === w.id ? "rotate(180deg)" : "none",
+                      }}
+                    >
+                      ▼
+                    </span>
+                  </div>
+
+                  {expandedId === w.id && (
+                    <div
+                      style={{
+                        background: "#111",
+                        border: "1px solid #1E1E1E",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        marginBottom: "8px",
+                        animation: "fadeIn 0.2s ease",
+                      }}
+                    >
+                      <div style={{ marginBottom: "12px" }}>
+                        <div
+                          style={{
+                            fontSize: "10px",
+                            letterSpacing: "2px",
+                            color: "#555",
+                            textTransform: "uppercase",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Meaning
+                        </div>
+                        <div style={{ fontSize: "14px", color: "#C8C0B0", lineHeight: "1.6" }}>{w.meaning}</div>
+                      </div>
+
+                      {w.vibe && (
+                        <div style={{ marginBottom: "12px" }}>
+                          <div
+                            style={{
+                              fontSize: "10px",
+                              letterSpacing: "2px",
+                              color: "#555",
+                              textTransform: "uppercase",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Vibe / Context
+                          </div>
+                          <div style={{ fontSize: "13px", color: "#C9A96E", lineHeight: "1.5", fontStyle: "italic" }}>
+                            ✦ {w.vibe}
+                          </div>
+                        </div>
+                      )}
+
+                      {w.example && (
+                        <div style={{ marginBottom: "12px" }}>
+                          <div
+                            style={{
+                              fontSize: "10px",
+                              letterSpacing: "2px",
+                              color: "#555",
+                              textTransform: "uppercase",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Example
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              color: "#888",
+                              lineHeight: "1.6",
+                              borderLeft: "2px solid #C9A96E33",
+                              paddingLeft: "12px",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            "{w.example}"
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px" }}>
+                        <span style={{ fontSize: "11px", color: "#333" }}>Added {w.date}</span>
+                        {deleteConfirm === w.id ? (
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <button
+                              onClick={() => setDeleteConfirm(null)}
+                              style={{
+                                fontSize: "12px",
+                                background: "#1A1A1A",
+                                border: "1px solid #333",
+                                color: "#888",
+                                padding: "4px 12px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleDelete(w.id)}
+                              style={{
+                                fontSize: "12px",
+                                background: "#FF4444",
+                                border: "none",
+                                color: "#fff",
+                                padding: "4px 12px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirm(w.id);
+                            }}
+                            style={{
+                              fontSize: "12px",
+                              background: "none",
+                              border: "1px solid #2A2A2A",
+                              color: "#444",
+                              padding: "4px 12px",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
 
         {filtered.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "#333" }}>
             <div style={{ fontSize: "32px", marginBottom: "12px" }}>📭</div>
-            <div style={{ fontSize: "14px" }}>{search ? `No words matching "${search}"` : "No words yet. Add your first one!"}</div>
+            <div style={{ fontSize: "14px" }}>
+              {search ? `No words matching "${search}"` : "No words yet. Add your first one!"}
+            </div>
           </div>
         )}
       </div>
@@ -333,46 +479,58 @@ export default function VocabTracker() {
 
       {/* Saved Toast */}
       {saved && (
-        <div style={{
-          position: "fixed",
-          bottom: "100px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "#1A2A1A",
-          border: "1px solid #2A4A2A",
-          color: "#6ECF6E",
-          padding: "10px 20px",
-          borderRadius: "20px",
-          fontSize: "13px",
-          zIndex: 300,
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            bottom: "100px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#1A2A1A",
+            border: "1px solid #2A4A2A",
+            color: "#6ECF6E",
+            padding: "10px 20px",
+            borderRadius: "20px",
+            fontSize: "13px",
+            zIndex: 300,
+          }}
+        >
           ✓ Word saved!
         </div>
       )}
 
       {/* Add Word Sheet */}
       {showForm && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          background: "#000000CC",
-          zIndex: 200,
-          display: "flex",
-          alignItems: "flex-end",
-        }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#000000CC",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "flex-end",
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowForm(false);
+          }}
         >
-          <div style={{
-            background: "#111",
-            borderRadius: "20px 20px 0 0",
-            padding: "24px 20px 40px",
-            width: "100%",
-            boxSizing: "border-box",
-            borderTop: "1px solid #222",
-          }}>
+          <div
+            style={{
+              background: "#111",
+              borderRadius: "20px 20px 0 0",
+              padding: "24px 20px 40px",
+              width: "100%",
+              boxSizing: "border-box",
+              borderTop: "1px solid #222",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "normal", color: "#E8E0D0" }}>Add New Word</h2>
-              <button onClick={() => setShowForm(false)} style={{ background: "none", border: "none", color: "#555", fontSize: "22px", cursor: "pointer" }}>×</button>
+              <button
+                onClick={() => setShowForm(false)}
+                style={{ background: "none", border: "none", color: "#555", fontSize: "22px", cursor: "pointer" }}
+              >
+                ×
+              </button>
             </div>
 
             {[
@@ -382,7 +540,18 @@ export default function VocabTracker() {
               { key: "example", label: "Example Sentence", placeholder: "Use it in a sentence..." },
             ].map(({ key, label, placeholder }) => (
               <div key={key} style={{ marginBottom: "14px" }}>
-                <label style={{ fontSize: "11px", letterSpacing: "2px", color: "#555", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>{label}</label>
+                <label
+                  style={{
+                    fontSize: "11px",
+                    letterSpacing: "2px",
+                    color: "#555",
+                    textTransform: "uppercase",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {label}
+                </label>
                 <input
                   value={form[key]}
                   onChange={(e) => setForm({ ...form, [key]: e.target.value })}
@@ -404,7 +573,18 @@ export default function VocabTracker() {
             ))}
 
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontSize: "11px", letterSpacing: "2px", color: "#555", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Part of Speech</label>
+              <label
+                style={{
+                  fontSize: "11px",
+                  letterSpacing: "2px",
+                  color: "#555",
+                  textTransform: "uppercase",
+                  display: "block",
+                  marginBottom: "6px",
+                }}
+              >
+                Part of Speech
+              </label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {["Noun", "Verb", "Adjective", "Adverb", "Idiom", "Phrase", "Other"].map((p) => (
                   <button
@@ -451,37 +631,40 @@ export default function VocabTracker() {
       )}
 
       <style>{`
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  background: #0D0D0D;
-  overflow-x: hidden;
-}
+        html, body, #root {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          min-height: 100vh;
+          background: #0D0D0D;
+          overflow-x: hidden;
+        }
 
-body {
-  overscroll-behavior: none;
-}
+        body {
+          overscroll-behavior: none;
+        }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
 
-input::placeholder {
-  color: #333;
-}
+        input::placeholder {
+          color: #333;
+        }
 
-* {
-  -webkit-tap-highlight-color: transparent;
-  box-sizing: border-box;
+        * {
+          -webkit-tap-highlight-color: transparent;
+          box-sizing: border-box;
+        }
+      `}</style>
+    </div>
+  );
 }
-`}</style>
